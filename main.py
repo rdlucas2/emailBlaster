@@ -1,6 +1,7 @@
 import argparse
 import os.path
 import time
+from datetime import datetime
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -23,7 +24,7 @@ def authenticate_gmail():
 
     Returns:
         Credentials: The OAuth2 credentials for accessing the Gmail API.
-    """    
+    """
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first time.
@@ -56,7 +57,7 @@ def search_messages(service, user_id, search_string):
     Returns:
         list: A list of dictionaries where each dictionary contains details of a message matching the search criteria,
               including the message ID, sender, and subject.
-    """    
+    """
     start_time = time.time()
     try:
         messages = []
@@ -121,7 +122,7 @@ def batch_delete_messages(service, user_id, message_ids):
 
     This function splits the list of message IDs into chunks of 1000 (the API limit for batch operations) and sends a
     batch delete request for each chunk. It handles any HTTP errors that occur during the process.
-    """    
+    """
     start_time = time.time()
     try:
         # Split the message_ids into chunks of 1000, the api limit
@@ -136,6 +137,143 @@ def batch_delete_messages(service, user_id, message_ids):
         print(f"Batch delete completed in {end_time - start_time:.2f} seconds")
 
 
+def mark_as_read(service, user_id):
+    """
+    Marks unread messages in the user's Gmail account as read in batches of 1000.
+
+    Args:
+        service: The Gmail API service instance.
+        user_id: The user's email address or 'me' to indicate the authenticated user.
+    """
+    try:
+        total_marked = 0
+        nextPageToken = None
+
+        # Continue fetching and modifying messages until there are no more unread messages
+        while True:
+            # Fetch up to 1000 unread messages at a time
+            response = (
+                service.users()
+                .messages()
+                .list(
+                    userId=user_id,
+                    q="is:unread",
+                    maxResults=1000,
+                    pageToken=nextPageToken,
+                )
+                .execute()
+            )
+            messages = response.get("messages", [])
+            nextPageToken = response.get("nextPageToken")
+
+            if not messages:
+                break  # No more unread messages
+
+            # Prepare list of message IDs to mark as read
+            ids_to_modify = [msg["id"] for msg in messages]
+
+            # Batch modify request to remove 'UNREAD' label
+            batch_modify_body = {"ids": ids_to_modify, "removeLabelIds": ["UNREAD"]}
+            service.users().messages().batchModify(
+                userId=user_id, body=batch_modify_body
+            ).execute()
+            total_marked += len(ids_to_modify)
+            print(f"Marked {len(ids_to_modify)} messages as read in this batch.")
+
+            if not nextPageToken:
+                break  # Exit loop if no more pages
+
+        print(f"Total marked as read: {total_marked} messages.")
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+
+
+def get_or_create_label(service, user_id, label_name):
+    """
+    Gets or creates a label by name and returns its ID.
+
+    Args:
+        service: The Gmail API service instance.
+        user_id: The user's email address or 'me' to indicate the authenticated user.
+        label_name: The name of the label to get or create.
+
+    Returns:
+        The ID of the label.
+    """
+    # Fetch existing labels
+    labels_response = service.users().labels().list(userId=user_id).execute()
+    labels = labels_response.get("labels", [])
+
+    # Check if the label already exists
+    for label in labels:
+        if label["name"] == label_name:
+            return label["id"]  # Return existing label ID
+
+    # Label doesn't exist, create it
+    label_body = {
+        "name": label_name,
+        "labelListVisibility": "labelShow",
+        "messageListVisibility": "show",
+    }
+    created_label = (
+        service.users().labels().create(userId=user_id, body=label_body).execute()
+    )
+    return created_label["id"]
+
+
+def archive_all_mail(service, user_id):
+    """
+    Archives mail in the user's Gmail account in batches of 1000 and applies a unique label.
+    """
+    try:
+        total_archived = 0
+        nextPageToken = None
+
+        # Generate the unique label name with the current timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_label_name = f"archive_{timestamp}"
+        label_id = get_or_create_label(service, user_id, unique_label_name)
+
+        while True:
+            response = (
+                service.users()
+                .messages()
+                .list(
+                    userId=user_id,
+                    q="in:inbox",
+                    maxResults=1000,
+                    pageToken=nextPageToken,
+                )
+                .execute()
+            )
+            messages = response.get("messages", [])
+            nextPageToken = response.get("nextPageToken")
+
+            if not messages:
+                break
+
+            ids_to_modify = [msg["id"] for msg in messages]
+            batch_modify_body = {
+                "ids": ids_to_modify,
+                "removeLabelIds": ["INBOX"],
+                "addLabelIds": [label_id],  # Apply the unique label
+            }
+            service.users().messages().batchModify(
+                userId=user_id, body=batch_modify_body
+            ).execute()
+            total_archived += len(ids_to_modify)
+            print(
+                f"Archived {len(ids_to_modify)} messages and applied label '{unique_label_name}' in this batch."
+            )
+
+            if not nextPageToken:
+                break
+
+        print(f"Total archived: {total_archived} messages.")
+    except HttpError as error:
+        print(f"An error occurred: {error}")
+
+
 def main():
     """
     Main function to handle command-line arguments for searching and optionally deleting Gmail messages.
@@ -143,7 +281,7 @@ def main():
     This function parses command-line arguments to search for messages that match a given query string and, if specified,
     deletes those messages. It uses the `authenticate_gmail` function to authenticate the user and then performs the
     search and delete operations as requested. The total execution time for the script is printed at the end.
-    """    
+    """
     start_time = time.time()
     parser = argparse.ArgumentParser(description="Gmail API Python Quickstart")
     parser.add_argument(
@@ -154,9 +292,24 @@ def main():
         action="store_true",
         help="Delete the messages filtered by the search string",
     )
+    parser.add_argument(
+        "--mark-read", action="store_true", help="Mark all unread messages as read"
+    )
+    parser.add_argument(
+        "--archive-all-mail", action="store_true", help="Remove Inbox label from all mail currently in Inbox, and apply an archive_DATE label instead"
+    )
     args = parser.parse_args()
     creds = authenticate_gmail()
     service = build("gmail", "v1", credentials=creds)
+
+    if args.archive_all_mail:
+        archive_all_mail(service, "me")
+        return
+
+    if args.mark_read:
+        mark_as_read(service, "me")
+        return
+
     if args.search:
         messages = search_messages(service, "me", args.search)
         total_messages = len(messages)
@@ -178,7 +331,7 @@ def main():
                 message_ids = [message["id"] for message in messages]
                 batch_delete_messages(service, "me", message_ids)
     end_time = time.time()
-    print(f"Total execution time: {end_time - start_time:.2f} seconds")    
+    print(f"Total execution time: {end_time - start_time:.2f} seconds")
 
 
 if __name__ == "__main__":

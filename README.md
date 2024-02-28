@@ -29,7 +29,10 @@ credentials.json file to be added in volume folder (mount this if using docker)
 ```
 pip install --no-cache-dir -r requirements.txt
 python main.py --search "from:example@example.com" --delete
+python one_thousand_batch.py --search "category:promotions" # this always deletes 1500 messages max
 python main.py --search "invoice"
+python main.py --mark-read # mark all unread messages as read
+python main.py --archive-all-mail # removes Inbox label and applies new archive_DATE label instead
 ```
 
 * TODO: fix docker. Docker not tested yet. Running locally, when logging in, token.json is placed alongside main.py file, and read from that location. Unable to login via browser in container.
