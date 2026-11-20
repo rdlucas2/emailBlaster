@@ -1,5 +1,6 @@
 volume/
 token.json
+token_filters.json
 
 #Standard Python gitignore https://github.com/github/gitignore/blob/main/Python.gitignore:
 # Byte-compiled / optimized / DLL files
