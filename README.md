@@ -33,7 +33,13 @@ python one_thousand_batch.py --search "category:promotions" # this always delete
 python main.py --search "invoice"
 python main.py --mark-read # mark all unread messages as read
 python main.py --archive-all-mail # removes Inbox label and applies new archive_DATE label instead
+python create_filters.py --dry-run # preview the Gmail filters in filters.json
+python create_filters.py # create them; safe to re-run, existing filters are skipped
 ```
+
+`create_filters.py` makes a Gmail filter for each rule in `filters.json`: matching mail gets the rule's label and skips the inbox, and `"mark_read": true` also marks it read. Missing labels are created. Filters only act on new mail, so use `batch_archive.py` for mail already in the inbox.
+
+Creating filters needs Gmail's settings permission, which the full-access token doesn't include. The first run opens a browser to sign in and saves a separate `token_filters.json`, leaving `token.json` alone.
 
 * TODO: fix docker. Docker not tested yet. Running locally, when logging in, token.json is placed alongside main.py file, and read from that location. Unable to login via browser in container.
 
