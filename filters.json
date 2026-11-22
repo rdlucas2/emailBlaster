@@ -4,6 +4,7 @@
     {"label": "Neighborhood", "query": "from:(nextdoor.com)"},
     {"label": "Mail", "query": "from:(informeddelivery.usps.com)"},
     {"label": "Newsletters", "query": "from:(postman.com OR email.openai.com OR daily.dev OR no-reply@docker.com)"},
+    {"label": "Newsletters", "query": "from:(myfitnesspal.com)"},
     {"label": "Deals & Promos", "mark_read": true, "query": "from:(email.dunhamssports.com)"},
     {"label": "Deals & Promos", "mark_read": true, "query": "from:(digital.costco.com)"},
     {"label": "Deals & Promos", "mark_read": true, "query": "from:(rayconglobal.com)"},
@@ -12,6 +13,7 @@
     {"label": "Deals & Promos", "mark_read": true, "query": "from:(newsletter@email.ticketmaster.com OR engage.ticketmaster.com OR eml.livenation.com OR pittsburghsymphony.org)"},
     {"label": "Deals & Promos", "mark_read": true, "query": "from:(h5.hilton.com OR feedback.hilton.com)"},
     {"label": "Deals & Promos", "mark_read": true, "query": "from:(caesars-marketing.com)"},
-    {"label": "Deals & Promos", "mark_read": true, "query": "from:(wearbreeze.co OR news@eml.ecobee.com)"}
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(wearbreeze.co OR news@eml.ecobee.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(birddogs.com OR thenashie.com.au OR movesgood.com OR info@xreal.com)"}
   ]
 }
