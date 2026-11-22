@@ -1,0 +1,28 @@
+{
+  "label": "cleanup_unread",
+  "keep": {
+    "starred": true,
+    "important": true,
+    "senders": ["yourbank.com", "yourinsurer.com", "yourschool.org", "amazon.com"]
+  },
+  "rules": [
+    {
+      "name": "Old promos and social",
+      "query": "{category:promotions category:social category:forums} older_than:30d",
+      "mark_read": true,
+      "archive": true
+    },
+    {
+      "name": "Old updates",
+      "query": "category:updates older_than:6m",
+      "mark_read": true,
+      "archive": true
+    },
+    {
+      "name": "Newer updates",
+      "query": "category:updates older_than:30d newer_than:6m",
+      "mark_read": true,
+      "archive": true
+    }
+  ]
+}
