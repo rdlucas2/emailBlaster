@@ -1,0 +1,17 @@
+{
+  "_comment": "Gmail filters for create_filters.py. Each rule labels matching mail and skips the inbox; mark_read also marks it read. Filters only apply to new mail.",
+  "filters": [
+    {"label": "Neighborhood", "query": "from:(nextdoor.com)"},
+    {"label": "Mail", "query": "from:(informeddelivery.usps.com)"},
+    {"label": "Newsletters", "query": "from:(postman.com OR email.openai.com OR daily.dev OR no-reply@docker.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(email.dunhamssports.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(digital.costco.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(rayconglobal.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(dsplustoyotadealer.com OR yourcarpartners.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(microsoftstore.microsoft.com OR customeremail.microsoftrewards.com OR promomail.microsoft.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(newsletter@email.ticketmaster.com OR engage.ticketmaster.com OR eml.livenation.com OR pittsburghsymphony.org)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(h5.hilton.com OR feedback.hilton.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(caesars-marketing.com)"},
+    {"label": "Deals & Promos", "mark_read": true, "query": "from:(wearbreeze.co OR news@eml.ecobee.com)"}
+  ]
+}
