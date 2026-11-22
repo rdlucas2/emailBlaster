@@ -19,7 +19,8 @@ def build_query(rule, keep):
     """
     Builds the Gmail search query for one rule.
 
-    Every rule only touches unread mail in the inbox, and the keep settings
+    Every rule only touches mail in the inbox, and only unread mail unless the
+    rule sets "unread_only": false. The keep settings
     (starred, important, and a list of senders) are excluded from every rule.
 
     Args:
@@ -29,7 +30,10 @@ def build_query(rule, keep):
     Returns:
         str: The full Gmail search query.
     """
-    parts = ["in:inbox", "is:unread", f"({rule['query']})"]
+    parts = ["in:inbox"]
+    if rule.get("unread_only", True):
+        parts.append("is:unread")
+    parts.append(f"({rule['query']})")
     if keep.get("starred", True):
         parts.append("-is:starred")
     if keep.get("important", True):
