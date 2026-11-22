@@ -35,7 +35,12 @@ python main.py --mark-read # mark all unread messages as read
 python main.py --archive-all-mail # removes Inbox label and applies new archive_DATE label instead
 python create_filters.py --dry-run # preview the Gmail filters in filters.json
 python create_filters.py # create them; safe to re-run, existing filters are skipped
+cp cleanup_rules.example.json cleanup_rules.json # then edit your keep list
+python cleanup.py --dry-run --sample 50 # count what each cleanup rule matches, with top senders
+python cleanup.py # mark read + archive the matches (asks you to type yes first)
 ```
+
+`cleanup.py` works through unread inbox mail with the rules in `cleanup_rules.json`. Each rule is a Gmail search (for example `category:promotions older_than:30d`) that gets `in:inbox is:unread` added, and the `keep` section is excluded from every rule: starred mail, important mail, and any sender in `senders`. Matching mail is marked read and archived with the rule file's `label`, so it's easy to find again. Nothing is deleted, and a message matched by one rule isn't counted again by the next. `cleanup_rules.json` is gitignored because the keep list names your own banks and accounts.
 
 `create_filters.py` makes a Gmail filter for each rule in `filters.json`: matching mail gets the rule's label and skips the inbox, and `"mark_read": true` also marks it read. Missing labels are created. Filters only act on new mail, so use `batch_archive.py` for mail already in the inbox.
 
