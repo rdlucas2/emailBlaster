@@ -1,0 +1,16 @@
+{
+  "label": "cleanup_unread_20261122_all",
+  "keep": {
+    "starred": false,
+    "important": false,
+    "senders": []
+  },
+  "rules": [
+    {
+      "name": "Everything unread in the inbox",
+      "query": "in:inbox",
+      "mark_read": true,
+      "archive": true
+    }
+  ]
+}
